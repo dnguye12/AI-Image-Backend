@@ -1,4 +1,4 @@
-import { Schema } from "mongoose"
+import mongoose, { Schema } from "mongoose"
 const uniqueValidator = require("mongoose-unique-validator")
 
 const ImageSchema = new Schema({
@@ -27,7 +27,7 @@ const ImageSchema = new Schema({
         ref: "User",
         default: []
     }],
-    dislikes: [{
+    dislikedBy: [{
         type: String,
         ref: "User",
         default: []
@@ -39,6 +39,10 @@ const ImageSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    buffer: {
+        type: Buffer,
+        required: true
     }
 })
 

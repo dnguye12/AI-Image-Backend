@@ -3,9 +3,7 @@ const uniqueValidator = require("mongoose-unique-validator")
 
 const UserSchema = new Schema({
     _id: {
-        type: String,
-        required: true,
-        unique: true
+        type: String
     },
     images: [{
         type: Schema.Types.ObjectId,
