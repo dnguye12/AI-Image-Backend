@@ -5,6 +5,15 @@ const UserSchema = new Schema({
     _id: {
         type: String
     },
+    fullName: {
+        type: String
+    },
+    imageUrl: {
+        type: String,
+    },
+    username: {
+        type: String,
+    },
     images: [{
         type: Schema.Types.ObjectId,
         ref: "Image",
