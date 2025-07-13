@@ -79,6 +79,18 @@ imageRouter.route("/random").get(async (req: Request, res: Response) => {
     }
 })
 
+imageRouter.route("/search").post(async (req: Request, res: Response) => {
+    const { prompt } = req.body
+
+    try {
+        const helper = (await Image.find({ $text: { $search: prompt } })) || []
+        res.status(200).json(helper)
+    } catch (error: unknown) {
+        console.log(error)
+        res.status(500).json('Backend error')
+    }
+})
+
 imageRouter.route("/:id/info").get(async (req: Request, res: Response) => {
     const { id } = req.params
 

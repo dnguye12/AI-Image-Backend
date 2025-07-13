@@ -46,6 +46,8 @@ const ImageSchema = new Schema({
     }
 })
 
+ImageSchema.index({prompt: "text"})
+
 ImageSchema.set('toJSON', {
     transform: (document, returnedObject) => {
         returnedObject.id = returnedObject._id.toString()
