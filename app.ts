@@ -32,7 +32,7 @@ const allowedOrigins = [
     config.FRONTEND_URL
 ]
 
-app.use(helmet())
+app.use(helmet({crossOriginResourcePolicy: {policy: "cross-origin"}}))
 app.use(cors({
     origin: (origin: string, callback: (err: Error | null, allow?: boolean) => void) => {
         if (!origin || !allowedOrigins.includes(origin)) {

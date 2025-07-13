@@ -1,8 +1,6 @@
 import { Request, Response, Router } from "express"
 import Image from "../models/image"
 
-const config = require("../utils/config")
-
 const imageRouter = Router()
 
 imageRouter.route("/recent").get(async (req: Request, res: Response) => {
@@ -54,6 +52,32 @@ imageRouter.route("/popular").get(async (req: Request, res: Response) => {
     }
 })
 
+imageRouter.route("/random").get(async (req: Request, res: Response) => {
+    try {
+        const helper = await Image.aggregate([
+            { $sample: { size: 30 } },
+            {
+                $project: {
+                    buffer: 0,
+                    _v: 0
+                }
+            }
+        ])
+
+        const response = helper.map(img => {
+            const { _id, ...rest } = img;
+            return {
+                id: _id.toString(),
+                ...rest
+            };
+        });
+
+        res.status(200).json(response)
+    } catch (error) {
+        console.log(error)
+        res.status(500).json('Backend error')
+    }
+})
 
 imageRouter.route("/:id/info").get(async (req: Request, res: Response) => {
     const { id } = req.params
