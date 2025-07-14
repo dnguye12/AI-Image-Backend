@@ -168,4 +168,82 @@ imageRouter.route("/").post(async (req: Request, res: Response) => {
     }
 })
 
+imageRouter.route("/:id/like").patch(async (req: Request, res: Response) => {
+    const imageId = req.params.id
+    const { userId } = req.body
+
+    if (!userId) {
+        res.status(400).json({ error: "Missing userId in request body" })
+        return
+    }
+
+    try {
+        const image = await Image.findById(imageId)
+
+        if (image) {
+            if (image.likedBy.includes(userId)) {
+                res.status(200).json({ message: "Image already liked by this user", image })
+                return
+            }else {
+                image.likedBy.push(userId)
+
+                const dislikedIndex = image.dislikedBy.indexOf(userId)
+
+                if(dislikedIndex !== -1) {
+                    image.dislikedBy.splice(dislikedIndex, 1)
+                }
+
+                const updatedImage = await image.save()
+                res.status(200).json(updatedImage)
+                return
+            }
+        } else {
+            res.status(204).json({ error: 'Image not found' });
+            return 
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json('Backend error')
+    }
+})
+
+imageRouter.route("/:id/dislike").patch(async (req: Request, res: Response) => {
+    const imageId = req.params.id
+    const { userId } = req.body
+
+    if (!userId) {
+        res.status(400).json({ error: "Missing userId in request body" })
+        return
+    }
+
+    try {
+        const image = await Image.findById(imageId)
+
+        if (image) {
+            if (image.dislikedBy.includes(userId)) {
+                res.status(200).json({ message: "Image already disliked by this user", image })
+                return
+            }else {
+                image.dislikedBy.push(userId)
+
+                const likedIndex = image.likedBy.indexOf(userId)
+
+                if(likedIndex !== -1) {
+                    image.likedBy.splice(likedIndex, 1)
+                }
+
+                const updatedImage = await image.save()
+                res.status(200).json(updatedImage)
+                return
+            }
+        } else {
+            res.status(204).json({ error: 'Image not found' });
+            return 
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json('Backend error')
+    }
+})
+
 module.exports = imageRouter
