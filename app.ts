@@ -32,22 +32,33 @@ const allowedOrigins = [
     config.FRONTEND_URL
 ]
 
-app.use(helmet({crossOriginResourcePolicy: {policy: "cross-origin"}}))
-app.use(cors({
-    origin: (origin: string, callback: (err: Error | null, allow?: boolean) => void) => {
-        if (!origin || !allowedOrigins.includes(origin)) {
-            return callback(new Error("CORS: Not allowed"), false)
-        }
-        callback(null, true)
-    },
-    optionsSuccessStatus: 200
-}))
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }))
+app.use((req: Request, res: Response, next: NextFunction) => {
+    const isPublicImage = req.method === "GET" && /^\/api\/image\/[^\/]+\/image$/.test(req.path)
+
+    if (isPublicImage) {
+        return cors()(req, res, next)
+    }
+
+    return cors({
+        origin: (origin: string, callback: (err: Error | null, allow?: boolean) => void) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                return callback(null, true) 
+            }
+            callback(new Error("CORS: Not allowed"), false)
+        },
+        optionsSuccessStatus: 200
+    })(req, res, next)
+})
 app.use(express.json())
 app.use(middleware.requestLogger)
 
 app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.path.match(/^\/api\/image\/[^\/]+\/image$/)) {
+        return next()
+    }
     const referer = req.get("referer") || ""
-    if(!referer.startsWith(config.FRONTEND_URL)) {
+    if (!referer.startsWith(config.FRONTEND_URL)) {
         return res.status(403).send("Forbidden")
     }
 
