@@ -73,6 +73,10 @@ app.use(helmet({
         }
     }
 }))
+
+const frontendPath = path.join(__dirname, '../frontend');
+app.use(express.static(frontendPath));
+
 app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.method === "OPTIONS") {
         return next()
@@ -102,9 +106,6 @@ app.use(mongoSanitize({
 app.use(cookieParser());
 
 app.use(middleware.requestLogger)
-
-const frontendPath = path.join(__dirname, '../frontend');
-app.use(express.static(frontendPath));
 
 app.use("/api/user", userRouter)
 app.use("/api/image", imageRouter)
