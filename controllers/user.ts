@@ -15,8 +15,10 @@ userRouter.route("/:id").get(async (req: Request, res: Response) => {
         let user = await User.findById(id)
         if (user) {
             res.status(200).json(user)
+            return
         } else {
             res.status(204).json({ error: 'Profile not found' });
+            return
         }
     } catch (error: unknown) {
         console.log(error)
@@ -25,10 +27,13 @@ userRouter.route("/:id").get(async (req: Request, res: Response) => {
 })
 
 userRouter.route("/").post(async (req: Request, res: Response) => {
-    const { id } = req.body
+    const { id, fullName, imageUrl, username } = req.body
 
     const newUser = new User({
-        _id: id
+        _id: id,
+        fullName,
+        imageUrl,
+        username
     })
 
     try {

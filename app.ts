@@ -1,4 +1,6 @@
 import { NextFunction, Request, Response } from "express"
+import mongoSanitize from 'express-mongo-sanitize';
+import cookieParser from "cookie-parser";
 
 const express = require("express")
 const config = require("./utils/config")
@@ -32,7 +34,18 @@ const allowedOrigins = [
     config.FRONTEND_URL
 ]
 
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }))
+app.use(helmet({
+    crossOriginResourcePolicy: {
+        policy: "cross-origin"
+    },
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'"],
+        }
+    }
+}))
 app.use((req: Request, res: Response, next: NextFunction) => {
     const isPublicImage = req.method === "GET" && /^\/api\/image\/[^\/]+\/image$/.test(req.path)
 
@@ -43,7 +56,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     return cors({
         origin: (origin: string, callback: (err: Error | null, allow?: boolean) => void) => {
             if (!origin || allowedOrigins.includes(origin)) {
-                return callback(null, true) 
+                return callback(null, true)
             }
             callback(new Error("CORS: Not allowed"), false)
         },
@@ -51,6 +64,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     })(req, res, next)
 })
 app.use(express.json())
+
+app.use(mongoSanitize({
+    replaceWith: '_'
+}))
+app.use(cookieParser());
+
 app.use(middleware.requestLogger)
 
 app.use((req: Request, res: Response, next: NextFunction) => {
