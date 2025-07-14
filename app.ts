@@ -42,16 +42,18 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'", "https://challenges.cloudflare.com", "https://clerk-telemetry.com"],
-            scriptSrc: ["'self'", config.CLERK_DB_URL],
+            scriptSrc: ["'self'", config.CLERK_DB_URL, config.FRONTEND_URL],
             scriptSrcElem: [
                 "'self'",
                 config.CLERK_DB_URL,
-                "https://challenges.cloudflare.com"
+                "https://challenges.cloudflare.com",
+                config.FRONTEND_URL
             ],
             connectSrc: [
                 "'self'",
                 config.CLERK_DB_URL,
-                "https://clerk-telemetry.com"
+                "https://clerk-telemetry.com",
+                config.FRONTEND_URL
             ],
             styleSrc: [
                 "'self'",
@@ -67,7 +69,8 @@ app.use(helmet({
                 "blob:",
                 "https://img.clerk.com",
                 "https://pollinations.ai",
-                "https://image.pollinations.ai"
+                "https://image.pollinations.ai",
+                config.FRONTEND_URL
             ],
             fontSrc: ["'self'", "data:"],
         }
