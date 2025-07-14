@@ -77,10 +77,7 @@ app.use(helmet({
     }
 }))
 
-const frontendPath = path.join(__dirname, '../frontend');
-app.use(express.static(frontendPath));
-
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use("/api", (req: Request, res: Response, next: NextFunction) => {
     if (req.method === "OPTIONS") {
         return next()
     }
@@ -113,6 +110,8 @@ app.use(middleware.requestLogger)
 app.use("/api/user", userRouter)
 app.use("/api/image", imageRouter)
 
+const frontendPath = path.join(__dirname, '../frontend');
+app.use(express.static(frontendPath));
 app.get('*', (req: Request, res: Response) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
 })
