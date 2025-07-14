@@ -93,7 +93,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
         optionsSuccessStatus: 200
     })(req, res, next)
 })
-app.use(express.static("dist"))
+
 app.use(express.json())
 
 app.use(mongoSanitize({
@@ -103,13 +103,14 @@ app.use(cookieParser());
 
 app.use(middleware.requestLogger)
 
-app.use(express.static(path.join(__dirname, "dist")))
+const frontendPath = path.join(__dirname, '../frontend');
+app.use(express.static(frontendPath));
 
 app.use("/api/user", userRouter)
 app.use("/api/image", imageRouter)
 
 app.get('*', (req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+    res.sendFile(path.join(frontendPath, 'index.html'));
 })
 
 app.use(middleware.unknownEndpoint)

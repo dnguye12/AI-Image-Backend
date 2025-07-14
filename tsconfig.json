@@ -5,7 +5,6 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
     "esModuleInterop": true,
     "module": "commonjs",
     "moduleResolution": "node",
@@ -17,7 +16,8 @@
     ],
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "outDir": "dist/backend"
   },
   "include": [
     "video.d.ts",
