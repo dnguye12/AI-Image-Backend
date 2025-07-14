@@ -8,6 +8,7 @@ const helmet = require("helmet")
 require("express-async-errors")
 const app = express()
 const cors = require("cors")
+const path = require("path");
 
 const userRouter = require("./controllers/user")
 const imageRouter = require("./controllers/image")
@@ -40,13 +41,42 @@ app.use(helmet({
     },
     contentSecurityPolicy: {
         directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'"],
-            styleSrc: ["'self'"],
+            defaultSrc: ["'self'", "https://challenges.cloudflare.com", "https://clerk-telemetry.com"],
+            scriptSrc: ["'self'", config.CLERK_DB_URL],
+            scriptSrcElem: [
+                "'self'",
+                config.CLERK_DB_URL,
+                "https://challenges.cloudflare.com"
+            ],
+            connectSrc: [
+                "'self'",
+                config.CLERK_DB_URL,
+                "https://clerk-telemetry.com"
+            ],
+            styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+            ],
+            workerSrc: [
+                "'self'",
+                "blob:",
+            ],
+            imgSrc: [
+                "'self'", 
+                "data:", 
+                "blob:",
+                "https://img.clerk.com",
+                "https://pollinations.ai",
+                "https://image.pollinations.ai"
+            ],
+            fontSrc: ["'self'", "data:"],
         }
     }
 }))
 app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.method === "OPTIONS") {
+        return next()
+    }
     const isPublicImage = req.method === "GET" && /^\/api\/image\/[^\/]+\/image$/.test(req.path)
 
     if (isPublicImage) {
@@ -63,6 +93,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
         optionsSuccessStatus: 200
     })(req, res, next)
 })
+app.use(express.static("dist"))
 app.use(express.json())
 
 app.use(mongoSanitize({
@@ -72,20 +103,14 @@ app.use(cookieParser());
 
 app.use(middleware.requestLogger)
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-    if (req.path.match(/^\/api\/image\/[^\/]+\/image$/)) {
-        return next()
-    }
-    const referer = req.get("referer") || ""
-    if (!referer.startsWith(config.FRONTEND_URL)) {
-        return res.status(403).send("Forbidden")
-    }
-
-    next()
-})
+app.use(express.static(path.join(__dirname, "dist")))
 
 app.use("/api/user", userRouter)
 app.use("/api/image", imageRouter)
+
+app.get('*', (req: Request, res: Response) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+})
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
