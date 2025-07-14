@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express"
 import Image from "../models/image"
+import User from "../models/user"
 
 const imageRouter = Router()
 
@@ -161,6 +162,13 @@ imageRouter.route("/").post(async (req: Request, res: Response) => {
             buffer
         })
         const savedImage = await newImage.save()
+
+        const user = await User.findById(createdBy)
+
+        user?.images.push(savedImage._id)
+
+        await user?.save()
+
         res.status(201).json(savedImage)
     } catch (error) {
         console.log(error)
@@ -179,27 +187,47 @@ imageRouter.route("/:id/like").patch(async (req: Request, res: Response) => {
 
     try {
         const image = await Image.findById(imageId)
+        const user = await User.findById(userId)
 
-        if (image) {
-            if (image.likedBy.includes(userId)) {
-                res.status(200).json({ message: "Image already liked by this user", image })
+        if (image && user) {
+            const likedIndex = image.likedBy.indexOf(userId)
+            if (likedIndex !== -1) {
+                image.likedBy.splice(likedIndex, 1)
+
+                const likedIndexUser = user.likedImages.indexOf(image._id)
+
+                if (likedIndexUser !== -1) {
+                    user.likedImages.splice(likedIndexUser, 1)
+                }
+
+                await user.save()
+                const updatedImage = await image.save()
+
+                res.status(200).json(updatedImage)
                 return
-            }else {
+            } else {
                 image.likedBy.push(userId)
+                user.likedImages.push(image._id)
 
                 const dislikedIndex = image.dislikedBy.indexOf(userId)
 
-                if(dislikedIndex !== -1) {
+                if (dislikedIndex !== -1) {
                     image.dislikedBy.splice(dislikedIndex, 1)
+
+                    const dislikedIndexUser = user.dislikedImages.indexOf(image._id)
+                    if (dislikedIndexUser !== -1) {
+                        user.dislikedImages.splice(dislikedIndexUser, 1)
+                    }
                 }
 
                 const updatedImage = await image.save()
+                await user.save()
                 res.status(200).json(updatedImage)
                 return
             }
         } else {
-            res.status(204).json({ error: 'Image not found' });
-            return 
+            res.status(204).json({ error: 'Image/user not found' });
+            return
         }
     } catch (error) {
         console.log(error)
@@ -218,27 +246,47 @@ imageRouter.route("/:id/dislike").patch(async (req: Request, res: Response) => {
 
     try {
         const image = await Image.findById(imageId)
+        const user = await User.findById(userId)
 
-        if (image) {
-            if (image.dislikedBy.includes(userId)) {
-                res.status(200).json({ message: "Image already disliked by this user", image })
+        if (image && user) {
+            const dislikedIndex = image.dislikedBy.indexOf(userId)
+            if (dislikedIndex !== -1) {
+                image.dislikedBy.splice(dislikedIndex, 1)
+
+                const dislikedIndexUser = user.dislikedImages.indexOf(image._id)
+
+                if (dislikedIndexUser !== -1) {
+                    user.dislikedImages.splice(dislikedIndexUser, 1)
+                }
+
+                await user.save()
+                const updatedImage = await image.save()
+
+                res.status(200).json(updatedImage)
                 return
-            }else {
+            } else {
                 image.dislikedBy.push(userId)
+                user.dislikedImages.push(image._id)
 
                 const likedIndex = image.likedBy.indexOf(userId)
 
-                if(likedIndex !== -1) {
+                if (likedIndex !== -1) {
                     image.likedBy.splice(likedIndex, 1)
+
+                    const likedIndexUser = user.likedImages.indexOf(image._id)
+                    if (likedIndexUser !== -1) {
+                        user.likedImages.splice(likedIndexUser, 1)
+                    }
                 }
 
                 const updatedImage = await image.save()
+                await user.save()
                 res.status(200).json(updatedImage)
                 return
             }
         } else {
-            res.status(204).json({ error: 'Image not found' });
-            return 
+            res.status(204).json({ error: 'Image/user not found' });
+            return
         }
     } catch (error) {
         console.log(error)

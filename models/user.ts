@@ -19,6 +19,16 @@ const UserSchema = new Schema({
         ref: "Image",
         default: []
     }],
+    likedImages: [{
+        type: Schema.Types.ObjectId,
+        ref: "Image",
+        default: []
+    }],
+    dislikedImages: [{
+        type: Schema.Types.ObjectId,
+        ref: "Image",
+        default: []
+    }],
     createdAt: {
         type: Date,
         default: Date.now
